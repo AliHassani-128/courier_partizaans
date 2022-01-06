@@ -89,5 +89,11 @@ class DailyIncome(models.Model):
 
 
 class WeekIncome(models.Model):
-    pass
+    courier = models.ForeignKey(Courier, on_delete=models.CASCADE)
+    saturday = models.DateField()
+    income = models.PositiveIntegerField(default=0)
+
+    def __str__(self):
+        return f'Week income:{self.income},{self.courier.name} , saturday:{self.saturday}'
+
 
