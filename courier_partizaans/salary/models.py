@@ -25,10 +25,21 @@ class TripIncome(models.Model):
 
 
 class IncreaseIncome(models.Model):
-    pass
+    courier = models.OneToOneField(Courier,on_delete=models.CASCADE)
+    amount = models.IntegerField(default=0)
+    description = models.CharField(max_length=200,default=None)
+
+    def __str__(self):
+        return f'Increase amount:{self.amount},{self.courier.name} , description:{self.description}'
 
 class DecreaseIncome(models.Model):
-    pass
+    courier = models.OneToOneField(Courier, on_delete=models.CASCADE)
+    amount = models.IntegerField(default=0)
+    description = models.CharField(max_length=200,default=None)
+
+
+    def __str__(self):
+        return f'Decrease amount:{self.amount},{self.courier.name} , description:{self.description}'
 
 class DailyIncome(models.Model):
     pass
