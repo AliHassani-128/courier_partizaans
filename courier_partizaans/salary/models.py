@@ -42,7 +42,51 @@ class DecreaseIncome(models.Model):
         return f'Decrease amount:{self.amount},{self.courier.name} , description:{self.description}'
 
 class DailyIncome(models.Model):
-    pass
+    courier = models.ForeignKey(Courier, on_delete=models.CASCADE)
+    amount = models.IntegerField(default=0)
+    date = models.DateField(auto_created=True)
+
+
+    def save(self,*args,**kwargs):
+        instance = super(DailyIncome,self).save(*args,**kwargs)
+        try:
+            increase = IncreaseIncome.objects.get(courier=self.courier)
+            self.amount += increase.amount
+
+        except IncreaseIncome.DoesNotExist:
+            pass
+        try:
+            decrease = DecreaseIncome.objects.get(courier=self.courier)
+            self.amount -= decrease.amount
+
+            if self.amount <= 0:
+                self.amount = 0
+        except DecreaseIncome.DoesNotExist:
+            pass
+
+        if self.date.isoweekday() == 6 :
+            try:
+                WeekIncome.objects.get(courier=self.courier,saturday=self.date)
+            except:
+                week_income = WeekIncome.objects.create(courier=self.courier,saturday=self.date)
+                week_income.income += self.amount
+                week_income.save()
+        else:
+            week_incomes = WeekIncome.objects.filter(saturday__month=self.date.month,saturday__year=self.date.year)
+            for week_income in week_incomes:
+                if fabs(week_income.saturday.day - self.date.day) <= 7 :
+                    week_income.income += self.amount
+                    week_income.save()
+                    break
+
+        return instance
+
+
+    def __str__(self):
+        return f'Daily income :{self.amount},{self.courier.name}, date:{self.date}'
+
+
+
 
 class WeekIncome(models.Model):
     pass
