@@ -1,7 +1,11 @@
+from math import fabs
+
 from django.db import models
 
 
 # Create your models here.
+from courier.models import Courier
+
 
 class TripIncome(models.Model):
     courier = models.ForeignKey(Courier,on_delete=models.CASCADE)
@@ -66,8 +70,10 @@ class DailyIncome(models.Model):
 
         if self.date.isoweekday() == 6 :
             try:
-                WeekIncome.objects.get(courier=self.courier,saturday=self.date)
-            except:
+                week_income = WeekIncome.objects.get(courier=self.courier,saturday=self.date)
+                week_income.income += self.amount
+                week_income.save()
+            except WeekIncome.DoesNotExist:
                 week_income = WeekIncome.objects.create(courier=self.courier,saturday=self.date)
                 week_income.income += self.amount
                 week_income.save()
@@ -95,5 +101,3 @@ class WeekIncome(models.Model):
 
     def __str__(self):
         return f'Week income:{self.income},{self.courier.name} , saturday:{self.saturday}'
-
-
