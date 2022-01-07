@@ -8,11 +8,19 @@ from courier.models import Courier
 
 
 class TripIncome(models.Model):
+    """
+
+    Trip income model for saving income for each trip
+    """
     courier = models.ForeignKey(Courier,on_delete=models.CASCADE)
     income = models.PositiveIntegerField()
     date = models.DateField(auto_created=True)
 
     def save(self,*args,**kwargs):
+        """
+        overwrite save method of Trip income model to save automatically
+        daily income when a trip income saved
+        """
         instance = super(TripIncome,self).save(*args,**kwargs)
         try:
             daily_income = DailyIncome.objects.get(courier=self.courier,date=self.date)
@@ -29,6 +37,11 @@ class TripIncome(models.Model):
 
 
 class IncreaseIncome(models.Model):
+
+    """
+    Increase income model for save how much should be increase for
+    courier's daily trip
+    """
     courier = models.OneToOneField(Courier,on_delete=models.CASCADE)
     amount = models.IntegerField(default=0)
     description = models.CharField(max_length=200,default=None)
@@ -37,6 +50,10 @@ class IncreaseIncome(models.Model):
         return f'Increase amount:{self.amount},{self.courier.name} , description:{self.description}'
 
 class DecreaseIncome(models.Model):
+    """
+    Decrease income model for save how much should be decrease for
+    courier's daily trip
+    """
     courier = models.OneToOneField(Courier, on_delete=models.CASCADE)
     amount = models.IntegerField(default=0)
     description = models.CharField(max_length=200,default=None)
@@ -46,12 +63,24 @@ class DecreaseIncome(models.Model):
         return f'Decrease amount:{self.amount},{self.courier.name} , description:{self.description}'
 
 class DailyIncome(models.Model):
+
+    """
+    Daily income model for save all trip's income for each day
+    """
+
     courier = models.ForeignKey(Courier, on_delete=models.CASCADE)
     amount = models.IntegerField(default=0)
     date = models.DateField(auto_created=True)
 
 
     def save(self,*args,**kwargs):
+
+        """
+        overwrite save method of Daily income model for save week income
+        automatically for each day and if increase or decrease for
+        courier was set it will be apply
+
+        """
         instance = super(DailyIncome,self).save(*args,**kwargs)
         try:
             increase = IncreaseIncome.objects.get(courier=self.courier)
@@ -95,6 +124,12 @@ class DailyIncome(models.Model):
 
 
 class WeekIncome(models.Model):
+
+
+    """
+    Week income model for save all daily income in each week that
+    starts with saturday
+    """
     courier = models.ForeignKey(Courier, on_delete=models.CASCADE)
     saturday = models.DateField()
     income = models.PositiveIntegerField(default=0)
